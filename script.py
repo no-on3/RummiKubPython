@@ -26,7 +26,8 @@ tiles = [
     [12, "D"]
 ]
 
-def groups_try(suit,lefts, all_combinations):
+
+def groups_try(suit, lefts, all_combinations):
     sub_results = []
     subsuit = suit[:]
     leftscopy = lefts[:]
@@ -44,10 +45,13 @@ def groups_try(suit,lefts, all_combinations):
                     cards_left = leftscopy[:]
                     for tile in sub_results:
                         cards_left.remove(tile)
-                    all_combinations.append([suit[:] + sub_results[:], list(cards_left)])
-                    groups_try(suit[:] + sub_results[:],cards_left[:],all_combinations)
+                    all_combinations.append(
+                        [suit[:] + sub_results[:], list(cards_left)])
+                    groups_try(suit[:] + sub_results[:],
+                               cards_left[:], all_combinations)
         sub_results = []
-    return subsuit,leftscopy
+    return subsuit, leftscopy
+
 
 def runs_try(all_combinations):
     run = []
@@ -75,14 +79,49 @@ def runs_try(all_combinations):
 
     return all_combinations
 
+
+def run_try(suit, lefts, all_combinations):
+    run = []
+
+    subsuit = suit[:]
+    leftscopy = lefts[:]
+    if (len(all_combinations) > 1):
+        if lefts == all_combinations[-2][-1]:
+            suit = []
+            return
+    for index, tile0 in enumerate(leftscopy):
+        run.append(tile0)
+        for tile1 in leftscopy[index+1:]:
+            if (tile1[0] == run[-1][0] + 1) and (tile0[1] == tile1[1] or tile1[1] == "jocker"):
+                run.append(tile1)
+                if len(run) >= 3:
+                    cards_left = leftscopy[:]
+                    for tilex in run:
+                        cards_left.remove(tilex)
+                    if (len(cards_left) == 0):
+                        return [[[suit[:] + run[:], cards_left], 0]]
+                    all_combinations.append(
+                        [suit[:] + run[:], cards_left])
+                    # if (not(sorted(all_combinations[-1][-1]) == sorted(cards_left))):
+
+                    run_try(suit[:] + run[:],
+                            cards_left[:], all_combinations)
+
+        run = []
+
+    return all_combinations
+
+
 def play(tiles):
-    first_combinations = [[[], tiles]]
-    output_runs_combination = runs_try(first_combinations)
+    first_combinations = [[[], sorted(tiles)]]
     all_combinations = []
+
+    output_runs_combination = run_try(
+        first_combinations[0][0], first_combinations[0][1], all_combinations)
     if(len(output_runs_combination) == 1):
         return output_runs_combination[0]
     for runs_combination in output_runs_combination[1:]:
-        groups_try(runs_combination[0],runs_combination[1], all_combinations)
+        groups_try(runs_combination[0], runs_combination[1], all_combinations)
     new_combinations = []
     for combination in reversed(all_combinations):
         hand, cards_left = combination
@@ -93,5 +132,6 @@ def play(tiles):
 
     sorted_combinations = sorted(new_combinations, key=itemgetter(2))
     return sorted_combinations
+
 
 print(play(tiles)[0])
