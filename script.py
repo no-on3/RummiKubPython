@@ -53,34 +53,7 @@ def groups_try(suit, lefts, all_combinations):
     return subsuit, leftscopy
 
 
-def runs_try(all_combinations):
-    run = []
-    for i, combination in enumerate(all_combinations):
-        hand, tiles = combination
-        if (len(tiles) == 0):
-            return [combination]
-        for index, tile0 in enumerate(tiles):
-            run.append(tile0)
-            for tile1 in tiles[index+1:]:
-                if (tile1[0] == run[-1][0] + 1) and (tile0[1] == tile1[1] or tile1[1] == "jocker"):
-                    run.append(tile1)
-                    if len(run) >= 3:
-                        cards_left = tiles[:]
-                        for tilex in run:
-                            cards_left.remove(tilex)
-                        if (len(cards_left) == 0):
-                            return [[[list(run) + list(hand), cards_left], 0]]
-                        if (not(sorted(all_combinations[-1][-1]) == sorted(cards_left))):
-                            all_combinations.append(
-                                [list(run) + list(hand), cards_left])
-                            runs_try(all_combinations[i+1:])
-
-            run = []
-
-    return all_combinations
-
-
-def run_try(suit, lefts, all_combinations):
+def runs_try(suit, lefts, all_combinations):
     run = []
 
     subsuit = suit[:]
@@ -92,7 +65,7 @@ def run_try(suit, lefts, all_combinations):
     for index, tile0 in enumerate(leftscopy):
         run.append(tile0)
         for tile1 in leftscopy[index+1:]:
-            if (tile1[0] == run[-1][0] + 1) and (tile0[1] == tile1[1] or tile1[1] == "jocker"):
+            if (tile1[0] == run[-1][0] + 1) and (tile0[1] == tile1[1]):
                 run.append(tile1)
                 if len(run) >= 3:
                     cards_left = leftscopy[:]
@@ -104,8 +77,8 @@ def run_try(suit, lefts, all_combinations):
                         [suit[:] + run[:], cards_left])
                     # if (not(sorted(all_combinations[-1][-1]) == sorted(cards_left))):
 
-                    run_try(suit[:] + run[:],
-                            cards_left[:], all_combinations)
+                    runs_try(suit[:] + run[:],
+                             cards_left[:], all_combinations)
 
         run = []
 
@@ -116,7 +89,7 @@ def play(tiles):
     first_combinations = [[[], sorted(tiles)]]
     all_combinations = []
 
-    output_runs_combination = run_try(
+    output_runs_combination = runs_try(
         first_combinations[0][0], first_combinations[0][1], all_combinations)
     if(len(output_runs_combination) == 1):
         return output_runs_combination[0]
